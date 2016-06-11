@@ -62,6 +62,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/yowcow/p5-Log-Dispatch-CronoDir/issues"
+      },
+      "homepage" : "https://github.com/yowcow/p5-Log-Dispatch-CronoDir",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/yowcow/p5-Log-Dispatch-CronoDir.git",
+         "web" : "https://github.com/yowcow/p5-Log-Dispatch-CronoDir"
+      }
+   },
    "version" : "0.01",
    "x_authority" : "cpan:YOWCOW",
    "x_serialization_backend" : "JSON::PP version 2.27300"

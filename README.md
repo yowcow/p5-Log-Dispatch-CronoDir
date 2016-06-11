@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/yowcow/p5-Log-Dispatch-CronoDir.svg?branch=master)](https://travis-ci.org/yowcow/p5-Log-Dispatch-CronoDir)
 # NAME
 
 Log::Dispatch::CronoDir - Log dispatcher for logging to time-based directories
