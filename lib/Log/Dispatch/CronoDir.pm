@@ -10,6 +10,8 @@ use File::Path qw(make_path);
 use Params::Validate qw(validate SCALAR BOOLEAN);
 use Scalar::Util qw(openhandle);
 
+Params::Validate::validation_options(allow_extra => 1);
+
 sub new {
     my ($proto, %args) = @_;
     my $class = ref $proto || $proto;
@@ -39,6 +41,81 @@ sub _init {
             },
         }
     );
+
+    my @rules;
+    $args{dirname_pattern} =~ s{ \% (?<char> \w) }{
+        $+{char} eq 'Y' ? do {
+            push @rules, { pos => 5, offset => 1900 };
+            '%04d';
+        } : $+{char} eq 'm' ? do {
+            push @rules, { pos => 4, offset => 1 };
+            '%02d';
+        } : $+{char} eq 'd' ? do {
+            push @rules, { pos => 3, offset => 0 };
+            '%02d';
+        } : '';
+    }egx;
+
+    $self->{_rules}           = \@rules;
+    $self->{_dirname_pattern} = $args{dirname_pattern};
+    $self->{_filename}        = $args{filename};
+    $self->{_mode}            = $args{mode};
+    $self->{_binmode}         = $args{binmode};
+    $self->{_autoflush}       = $args{autoflush};
+
+    $self->_get_current_fh;
+}
+
+sub _localtime { localtime }
+
+sub _find_current_dir {
+    my $self = shift;
+    my @now  = _localtime();
+    sprintf(
+        $self->{_dirname_pattern},
+        map { $now[ $_->{pos} ] + $_->{offset} } @{ $self->{_rules} },
+    );
+}
+
+sub _get_current_fh {
+    my $self    = shift;
+    my $dirname = $self->_find_current_dir;
+
+    if (!exists $self->{_current_dir} || $dirname ne $self->{_current_dir}) {
+        close $self->{_current_fh}
+            if $self->{_current_fh} and openhandle($self->{_current_fh});
+
+        make_path $dirname;
+        $self->{_current_dir} = $dirname;
+        $self->{_current_filepath} = File::Spec->catfile($dirname, $self->{_filename});
+
+        open my $fh, $self->{_mode}, $self->{_current_filepath}
+            or die "Failed opening file $self->{current_filepath} to write: $!";
+
+        binmode $fh, $self->{_binmode} if $self->{_binmode};
+
+        do {
+            my $oldfh = select $fh;
+            $| = 1;
+            select $oldfh;
+        } if $self->{_autoflush};
+
+        $self->{_current_fh} = $fh;
+    }
+
+    $self->{_current_fh};
+}
+
+sub log_message {
+    my ($self, %args) = @_;
+    print { $self->_get_current_fh } $args{message}
+        or die "Cannot write to file $self->{_current_file}: $!";
+}
+
+sub DESTROY {
+    my $self = shift;
+    close $self->{_current_fh}
+        if $self->{_current_fh} and openhandle($self->{_current_fh});
 }
 
 1;

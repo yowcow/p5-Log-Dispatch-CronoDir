@@ -56,7 +56,8 @@
          "requires" : {
             "Test::Exception" : "0",
             "Test::Mock::Guard" : "0",
-            "Test::More" : "0.98"
+            "Test::More" : "0.98",
+            "Test::Pretty" : "0"
          }
       }
    },

@@ -2,11 +2,22 @@ use strict;
 use warnings;
 use File::Spec;
 use File::Temp qw(tempdir);
+use Log::Dispatch::CronoDir;
 use Test::Exception;
 use Test::Mock::Guard;
 use Test::More;
+use Test::Pretty;
 
 my $class = 'Log::Dispatch::CronoDir';
+
+sub slurp_file {
+    my ($file, %opt) = @_;
+    local $/ = undef;
+    open my $fh, '<', $file
+        or die "Failed opening file $file: $!";
+    binmode $fh, $opt{binmode} if $opt{binmode};
+    <$fh>;
+}
 
 subtest 'Test instance' => sub {
 
@@ -22,7 +33,7 @@ subtest 'Test instance' => sub {
                 # Log::Dispatch::CronoDir
                 filename => 'test.log',
                 )
-        }, 'Missing dirname_pattern';
+        } 'Missing dirname_pattern';
 
         dies_ok {
             $class->new(
@@ -35,7 +46,7 @@ subtest 'Test instance' => sub {
                 # Log::Dispatch::CronoDir
                 dirname_pattern => '/var/log/tmp/%Y/%m/%d',
                 )
-        }, 'Missing filename';
+        } 'Missing filename';
     };
 
     subtest 'Succeeds with valid params' => sub {
@@ -52,7 +63,12 @@ subtest 'Test instance' => sub {
             filename        => 'test.log',
         );
         my ($sec, $min, $hour, $mday, $mon, $year) = localtime;
-        my $output_dir = File::Spec->catdir($dir, $year + 1900, $mon + 1, $mday);
+        my $output_dir = File::Spec->catdir(
+            $dir,
+            $year + 1900,
+            sprintf('%02d', $mon + 1),
+            sprintf('%02d', $mday)
+        );
 
         isa_ok $log, 'Log::Dispatch::CronoDir';
 
@@ -77,45 +93,46 @@ subtest 'Test log_message' => sub {
     );
 
     subtest 'Write to current directory' => sub {
-        lives_ok { $log->log_message(level => 'error', message => 'Test1') };
+        lives_ok {
+            $log->log_message(level => 'error', message => 'Test1');
+        };
 
         my ($sec, $min, $hour, $mday, $mon, $year) = localtime;
-        my $output_file = File::Spec->catfile($dir, $year + 1900, $mon + 1, $mday, 'test.log');
+        my $output_file = File::Spec->catfile(
+            $dir,
+            $year + 1900,
+            sprintf('%02d', $mon + 1),
+            sprintf('%02d', $mday), 'test.log'
+        );
 
         ok -f $output_file;
 
-        my $content = do {
-            local $/ = undef;
-            open my $fh, '<', $output_file;
-            <$fh>;
-        };
+        my $content = slurp_file($output_file);
 
-        is $content, "Test1\n";
+        is $content, "Test1";
     };
 
     subtest 'Write to 2000-01-01 directory' => sub {
         my $guard = mock_guard($class => { _localtime => sub { (0, 0, 0, 1, 0, 100) }, });
 
-        lives_ok { $log->log_message(level => 'error', message => 'Test2') };
+        lives_ok {
+            $log->log_message(level => 'error', message => 'Test2');
+        };
 
         my $output_file = File::Spec->catfile($dir, qw(2000 01 01), 'test.log');
 
         ok -f $output_file;
 
-        my $content = do {
-            local $/ = undef;
-            open my $fh, '<', $output_file;
-            <$fh>;
-        };
+        my $content = slurp_file($output_file);
 
-        is $content, "Test1\n";
+        is $content, "Test2";
     };
 };
 
-subtest 'Test binmode' => sub {
+subtest 'Test binmode option' => sub {
     my $guard = mock_guard($class => { _localtime => sub { (0, 0, 0, 1, 0, 100) }, });
 
-    subtest 'Multi-byte logging with :utf8' => sub {
+    subtest 'Multi-byte logging with binmode => ":utf8"' => sub {
         use utf8;
 
         my $dir = tempdir(CLEANUP => 1);
@@ -132,23 +149,18 @@ subtest 'Test binmode' => sub {
             binmode         => ':utf8',
         );
 
-        lives_ok { $log->log_message(level => 'error', message => 'あいうえお') };
+        lives_ok {
+            $log->log_message(level => 'error', message => 'あいうえお');
+        };
 
         my $output_file = File::Spec->catfile($dir, qw(2000 01 01), 'test.log');
 
-        my $content = do {
-            local $/ = undef;
-            open my $fh, '<', $output_file;
-            binmode $fh, ':utf8';
-            <$fh>
-        };
+        my $content = slurp_file($output_file, binmode => ':utf8');
 
-        is $content, "あいうえお\n";
+        is $content, "あいうえお";
     };
 
-    subtest 'Multi-byte logging without :utf8' => sub {
-        no utf8;
-
+    subtest 'Multi-byte logging without binmode => ":utf8"' => sub {
         my $dir = tempdir(CLEANUP => 1);
         my $log = Log::Dispatch::CronoDir->new(
 
@@ -162,17 +174,15 @@ subtest 'Test binmode' => sub {
             filename        => 'test.log',
         );
 
-        lives_ok { $log->log_message(level => 'error', message => 'あいうえお') };
+        lives_ok {
+            $log->log_message(level => 'error', message => 'あいうえお');
+        };
 
         my $output_file = File::Spec->catfile($dir, qw(2000 01 01), 'test.log');
 
-        my $content = do {
-            local $/ = undef;
-            open my $fh, '<', $output_file;
-            <$fh>
-        };
+        my $content = slurp_file($output_file);
 
-        is $content, "あいうえお\n";
+        is $content, "あいうえお";
     };
 };
 
