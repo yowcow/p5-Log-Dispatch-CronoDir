@@ -43,14 +43,14 @@ sub _init {
     );
 
     my @rules;
-    $args{dirname_pattern} =~ s{ \% (?<char> \w) }{
-        $+{char} eq 'Y' ? do {
+    $args{dirname_pattern} =~ s{ \% (\w) }{
+        $1 eq 'Y' ? do {
             push @rules, { pos => 5, offset => 1900 };
             '%04d';
-        } : $+{char} eq 'm' ? do {
+        } : $1 eq 'm' ? do {
             push @rules, { pos => 4, offset => 1 };
             '%02d';
-        } : $+{char} eq 'd' ? do {
+        } : $1 eq 'd' ? do {
             push @rules, { pos => 3, offset => 0 };
             '%02d';
         } : '';
