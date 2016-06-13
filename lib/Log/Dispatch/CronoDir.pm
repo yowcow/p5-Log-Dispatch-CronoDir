@@ -141,7 +141,7 @@ Log::Dispatch::CronoDir - Log dispatcher for logging to time-based directories
 
     my $log = Log::Dispatch::CronoDir->new(
         dirname_pattern => '/var/log/%Y/%m/%d',
-        permissions     => '0777',
+        permissions     => 0777,
         filename        => 'output.log',
         mode            => '>>:unix',
         binmode         => ':utf8',
@@ -168,7 +168,7 @@ Creates an instance.  Accepted hash keys are:
 Directory name pattern where log files to be written to.
 POSIX strftime's conversion characters C<%Y>, C<%m>, and C<%d> are currently accepted.
 
-=item permissions => Str
+=item permissions => Octal
 
 Directory permissions when specified directory does not exist. Optional. Default: 0755
 
