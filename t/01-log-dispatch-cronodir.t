@@ -6,7 +6,6 @@ use Log::Dispatch::CronoDir;
 use Test::Exception;
 use Test::Mock::Guard;
 use Test::More;
-use Test::Pretty;
 
 my $class = 'Log::Dispatch::CronoDir';
 
