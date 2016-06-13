@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use parent qw(Log::Dispatch::Output);
 
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 
 use File::Path qw(make_path);
 use Params::Validate qw(validate SCALAR BOOLEAN);
