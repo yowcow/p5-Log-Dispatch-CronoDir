@@ -129,6 +129,47 @@ subtest 'Test log_message' => sub {
     };
 };
 
+subtest 'Test permissions option' => sub {
+    my $guard = mock_guard($class => { _localtime => sub { (0, 0, 0, 1, 0, 100) }, });
+
+    subtest 'permissions => 0777' => sub {
+        my $dir = tempdir(CLEANUP => 1);
+        my $log = Log::Dispatch::CronoDir->new(
+
+            # Log::Dispatch::Output
+            name      => 'foobar',
+            min_level => 'debug',
+            newline   => 1,
+
+            # Log::Dispatch::CronoDir
+            dirname_pattern => File::Spec->catdir($dir, qw( %Y %m %d )),
+            permissions     => 0777,
+            filename        => 'test.log',
+        );
+        my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
+
+        is sprintf("%04o", $dirmode & 0777), '0777';
+    };
+
+    subtest 'permissions => none' => sub {
+        my $dir = tempdir(CLEANUP => 1);
+        my $log = Log::Dispatch::CronoDir->new(
+
+            # Log::Dispatch::Output
+            name      => 'foobar',
+            min_level => 'debug',
+            newline   => 1,
+
+            # Log::Dispatch::CronoDir
+            dirname_pattern => File::Spec->catdir($dir, qw( %Y %m %d )),
+            filename        => 'test.log',
+        );
+        my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
+
+        is sprintf("%04o", $dirmode & 0777), '0755';
+    };
+};
+
 subtest 'Test binmode option' => sub {
     my $guard = mock_guard($class => { _localtime => sub { (0, 0, 0, 1, 0, 100) }, });
 

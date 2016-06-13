@@ -26,8 +26,12 @@ sub _init {
     my %args = validate(
         @_,
         {   dirname_pattern => { type => SCALAR },
-            filename        => { type => SCALAR },
-            mode            => {
+            permissions     => {
+                type    => SCALAR,
+                default => 0755,
+            },
+            filename => { type => SCALAR },
+            mode     => {
                 type    => SCALAR,
                 default => '>>',
             },
@@ -58,6 +62,7 @@ sub _init {
 
     $self->{_rules}           = \@rules;
     $self->{_dirname_pattern} = $args{dirname_pattern};
+    $self->{_permissions}     = $args{permissions};
     $self->{_filename}        = $args{filename};
     $self->{_mode}            = $args{mode};
     $self->{_binmode}         = $args{binmode};
@@ -88,6 +93,9 @@ sub _get_current_fh {
         make_path $dirname;
         $self->{_current_dir} = $dirname;
         $self->{_current_filepath} = File::Spec->catfile($dirname, $self->{_filename});
+
+        chmod $self->{_permissions}, $dirname
+            or die "Failed chmod $dirname to $self->{_permissions}: $!";
 
         open my $fh, $self->{_mode}, $self->{_current_filepath}
             or die "Failed opening file $self->{current_filepath} to write: $!";
@@ -133,6 +141,7 @@ Log::Dispatch::CronoDir - Log dispatcher for logging to time-based directories
 
     my $log = Log::Dispatch::CronoDir->new(
         dirname_pattern => '/var/log/%Y/%m/%d',
+        permissions     => 0777,
         filename        => 'output.log',
         mode            => '>>:unix',
         binmode         => ':utf8',
@@ -159,6 +168,10 @@ Creates an instance.  Accepted hash keys are:
 Directory name pattern where log files to be written to.
 POSIX strftime's conversion characters C<%Y>, C<%m>, and C<%d> are currently accepted.
 
+=item permissions => Octal
+
+Directory permissions when specified directory does not exist. Optional. Default: 0755
+
 =item filename => Str
 
 Log file name to be written in the directory.
@@ -169,7 +182,7 @@ Mode to be used when opening a file handle.  Default: ">>"
 
 =item binmode => Str
 
-Binmode to specify with C<binmode>.  Default: None
+Binmode to specify with C<binmode>.  Optional.  Default: None
 
 =item autoflush => Bool
 
