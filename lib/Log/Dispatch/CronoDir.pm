@@ -90,12 +90,10 @@ sub _get_current_fh {
         close $self->{_current_fh}
             if $self->{_current_fh} and openhandle($self->{_current_fh});
 
-        make_path $dirname;
+        make_path $dirname, { chmod => $self->{_permissions} };
+
         $self->{_current_dir} = $dirname;
         $self->{_current_filepath} = File::Spec->catfile($dirname, $self->{_filename});
-
-        chmod $self->{_permissions}, $dirname
-            or die "Failed chmod $dirname to $self->{_permissions}: $!";
 
         open my $fh, $self->{_mode}, $self->{_current_filepath}
             or die "Failed opening file $self->{current_filepath} to write: $!";
@@ -171,6 +169,8 @@ POSIX strftime's conversion characters C<%Y>, C<%m>, and C<%d> are currently acc
 =item permissions => Octal
 
 Directory permissions when specified directory does not exist. Optional. Default: 0755
+
+Note that this won't work on Windows OS.
 
 =item filename => Str
 
