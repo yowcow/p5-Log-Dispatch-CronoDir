@@ -72,7 +72,7 @@
          "web" : "https://github.com/yowcow/p5-Log-Dispatch-CronoDir"
       }
    },
-   "version" : "0.04",
+   "version" : "0.05",
    "x_authority" : "cpan:YOWCOW",
    "x_contributors" : [
       "Yoko OYAMA <yowcow@users.noreply.github.com>"

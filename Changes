@@ -2,6 +2,8 @@ Revision history for Perl extension Log-Dispatch-CronoDir
 
 {{$NEXT}}
 
+0.05 2016-06-16T12:20:21Z
+
     - Skip directory permissions test on Windows OS
 
 0.04 2016-06-13T05:55:14Z
