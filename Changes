@@ -2,7 +2,6 @@ Revision history for Perl extension Log-Dispatch-CronoDir
 
 {{$NEXT}}
 
-    - Do chmod on directory with `File::path::make_path()`
     - Skip directory permissions test on Windows OS
 
 0.04 2016-06-13T05:55:14Z
