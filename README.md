@@ -38,6 +38,8 @@ Creates an instance.  Accepted hash keys are:
 
     Directory permissions when specified directory does not exist. Optional. Default: 0755
 
+    Note that this won't work on Windows OS.
+
 - filename => Str
 
     Log file name to be written in the directory.

@@ -172,6 +172,8 @@ POSIX strftime's conversion characters C<%Y>, C<%m>, and C<%d> are currently acc
 
 Directory permissions when specified directory does not exist. Optional. Default: 0755
 
+Note that this won't work on Windows OS.
+
 =item filename => Str
 
 Log file name to be written in the directory.
