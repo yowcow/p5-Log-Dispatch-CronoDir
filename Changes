@@ -2,6 +2,9 @@ Revision history for Perl extension Log-Dispatch-CronoDir
 
 {{$NEXT}}
 
+    - Make "permission" optional.
+      When not specified, creating directory's permissions are based on current umask.
+
 0.05 2016-06-16T12:20:21Z
 
     - Skip directory permissions test on Windows OS
