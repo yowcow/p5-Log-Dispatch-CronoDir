@@ -172,7 +172,8 @@ POSIX strftime's conversion characters C<%Y>, C<%m>, and C<%d> are currently acc
 
 =item permissions => Octal
 
-Directory permissions when specified directory does not exist. Optional. Default: 0755
+Directory permissions when specified directory does not exist. Optional.
+When not specified, creating directory's permissions are based on current umask.
 
 Note that this won't work on Windows OS.
 
