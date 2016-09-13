@@ -9,6 +9,7 @@ requires 'parent';
 requires 'Scalar::Util';
 
 on 'test' => sub {
+    requires 'Scope::Guard';
     requires 'Test::Exception';
     requires 'Test::Mock::Guard';
     requires 'Test::More', '0.98';

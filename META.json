@@ -54,6 +54,7 @@
       },
       "test" : {
          "requires" : {
+            "Scope::Guard" : "0",
             "Test::Exception" : "0",
             "Test::Mock::Guard" : "0",
             "Test::More" : "0.98"

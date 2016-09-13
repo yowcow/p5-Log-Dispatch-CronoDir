@@ -3,6 +3,7 @@ use warnings;
 use File::Spec;
 use File::Temp qw(tempdir);
 use Log::Dispatch::CronoDir;
+use Scope::Guard;
 use Test::Exception;
 use Test::Mock::Guard;
 use Test::More;
@@ -158,22 +159,54 @@ SKIP: {
         };
 
         subtest 'permissions => none' => sub {
-            my $dir = tempdir(CLEANUP => 1);
-            my $log = Log::Dispatch::CronoDir->new(
-
-                # Log::Dispatch::Output
-                name      => 'foobar',
-                min_level => 'debug',
-                newline   => 1,
-
-                # Log::Dispatch::CronoDir
-                dirname_pattern => File::Spec->catdir($dir, qw( %Y %m %d )),
-                filename        => 'test.log',
+            my $umask = umask;
+            my $scope_guard = Scope::Guard->new(
+                sub {
+                    umask $umask;
+                }
             );
-            my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
 
-            is $dirmode & 0777, 0777 - umask,
-                'Created directory permissions are based on current umask';
+            subtest 'When umask is 002' => sub {
+
+                umask 002;
+
+                my $dir = tempdir(CLEANUP => 1);
+                my $log = Log::Dispatch::CronoDir->new(
+
+                    # Log::Dispatch::Output
+                    name      => 'foobar',
+                    min_level => 'debug',
+                    newline   => 1,
+
+                    # Log::Dispatch::CronoDir
+                    dirname_pattern => File::Spec->catdir($dir, qw( %Y %m %d )),
+                    filename        => 'test.log',
+                );
+                my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
+
+                is sprintf('%04o', $dirmode & 0777), '0775';
+            };
+
+            subtest 'When umask is 022' => sub {
+
+                umask 022;
+
+                my $dir = tempdir(CLEANUP => 1);
+                my $log = Log::Dispatch::CronoDir->new(
+
+                    # Log::Dispatch::Output
+                    name      => 'foobar',
+                    min_level => 'debug',
+                    newline   => 1,
+
+                    # Log::Dispatch::CronoDir
+                    dirname_pattern => File::Spec->catdir($dir, qw( %Y %m %d )),
+                    filename        => 'test.log',
+                );
+                my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
+
+                is sprintf('%04o', $dirmode & 0777), '0755';
+            };
         };
     };
 }
