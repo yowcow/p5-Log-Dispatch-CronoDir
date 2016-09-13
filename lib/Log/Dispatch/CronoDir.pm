@@ -28,7 +28,7 @@ sub _init {
         {   dirname_pattern => { type => SCALAR },
             permissions     => {
                 type    => SCALAR,
-                default => 0755,
+                optional => 1,
             },
             filename => { type => SCALAR },
             mode     => {
@@ -94,8 +94,10 @@ sub _get_current_fh {
         $self->{_current_dir} = $dirname;
         $self->{_current_filepath} = File::Spec->catfile($dirname, $self->{_filename});
 
-        chmod $self->{_permissions}, $dirname
-            or die "Failed chmod $dirname to $self->{_permissions}: $!";
+        if (defined $self->{_permissions}) {
+            chmod $self->{_permissions}, $dirname
+                or die "Failed chmod $dirname to $self->{_permissions}: $!";
+        }
 
         open my $fh, $self->{_mode}, $self->{_current_filepath}
             or die "Failed opening file $self->{current_filepath} to write: $!";

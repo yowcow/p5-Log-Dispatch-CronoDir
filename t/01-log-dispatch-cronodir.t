@@ -172,7 +172,8 @@ SKIP: {
             );
             my $dirmode = (stat(File::Spec->catdir($dir, qw(2000 01 01))))[2];
 
-            is sprintf("%04o", $dirmode & 0777), '0755';
+            is $dirmode & 0777, 0777 - umask,
+                'Created directory permissions are based on current umask';
         };
     };
 }
